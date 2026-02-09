@@ -1,0 +1,110 @@
+{
+    "schedule": [
+        {
+            "id": "1",
+            "gunAdi": "Pazartesi",
+            "gun": 1,
+            "dersler": [
+                {
+                    "id": "p1",
+                    "dersAdi": "Sunucu İşletim Sistemi",
+                    "ogretimGorevlisi": "Öğr.Gör. Z.OBUZ",
+                    "baslangic": "15:15",
+                    "bitis": "16:45",
+                    "link": "https://debsis.firat.edu.tr/course/view.php?id=218063"
+                },
+                {
+                    "id": "p2",
+                    "dersAdi": "Bilgi Güvenliği Ve Siber Güvenlik",
+                    "ogretimGorevlisi": "Doç. Dr. D.AVCI",
+                    "baslangic": "19:15",
+                    "bitis": "20:45",
+                    "link": ""
+                }
+            ]
+        },
+        {
+            "id": "2",
+            "gunAdi": "Salı",
+            "gun": 2,
+            "dersler": [
+                {
+                    "id": "s1",
+                    "dersAdi": "Sistem Analiz ve Tasarımı",
+                    "ogretimGorevlisi": "Öğr.Gör. Dr. M.P.BAYDOĞAN",
+                    "baslangic": "16:15",
+                    "bitis": "17:45",
+                    "link": ""
+                },
+                {
+                    "id": "s2",
+                    "dersAdi": "Mobil Programlama",
+                    "ogretimGorevlisi": "Öğr.Gör. H.EKİNCİ",
+                    "baslangic": "19:15",
+                    "bitis": "20:45",
+                    "link": ""
+                }
+            ]
+        },
+        {
+            "id": "3",
+            "gunAdi": "Çarşamba",
+            "gun": 3,
+            "dersler": [
+                {
+                    "id": "c1",
+                    "dersAdi": "Mesleki Yabancı Dil-II",
+                    "ogretimGorevlisi": "Öğr.Gör. D.AVCI",
+                    "baslangic": "17:15",
+                    "bitis": "18:45",
+                    "link": ""
+                }
+            ]
+        },
+        {
+            "id": "4",
+            "gunAdi": "Perşembe",
+            "gun": 4,
+            "dersler": [
+                {
+                    "id": "pe1",
+                    "dersAdi": "Açık Kaynak İşletim Sistemi",
+                    "ogretimGorevlisi": "Dr. Öğr. Üyesi K.FIRILDAK",
+                    "baslangic": "16:15",
+                    "bitis": "17:45",
+                    "link": ""
+                },
+                {
+                    "id": "pe2",
+                    "dersAdi": "Nesne Tabanlı Programlama-II",
+                    "ogretimGorevlisi": "Öğr.Gör. A.C.ÇAKIL",
+                    "baslangic": "19:15",
+                    "bitis": "20:45",
+                    "link": ""
+                }
+            ]
+        },
+        {
+            "id": "5",
+            "gunAdi": "Cuma",
+            "gun": 5,
+            "dersler": []
+        },
+        {
+            "id": "6",
+            "gunAdi": "Cumartesi",
+            "gun": 6,
+            "dersler": []
+        },
+        {
+            "id": "7",
+            "gunAdi": "Pazar",
+            "gun": 0,
+            "dersler": []
+        }
+    ],
+    "sinavlar": [],
+    "ayarlar": {
+        "hatirlatmaDakika": 15
+    }
+}
