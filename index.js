@@ -22,6 +22,9 @@ class ScheduleManager {
     this.browser = null;
     this.checkInterval = null;
     this.debug = true;
+    this.isChecking = false;
+    this.notifiedClasses = new Set();
+    this.NAVIGATION_TIMEOUT = 30000;
   }
 
   /**
@@ -160,11 +163,15 @@ class ScheduleManager {
 
         const decrypted = CryptoJS.AES.decrypt(encrypted, password).toString(CryptoJS.enc.Utf8);
         
-        if (!decrypted) {
+        if (!decrypted || decrypted === '') {
           throw new Error('Invalid password');
         }
         
-        this.credentials = JSON.parse(decrypted);
+        try {
+          this.credentials = JSON.parse(decrypted);
+        } catch (error) {
+          throw new Error('Invalid password or corrupted credentials');
+        }
         this.log('success', 'Credentials loaded');
       } else {
         await this.createCredentials();
@@ -217,53 +224,72 @@ class ScheduleManager {
     // Check immediately
     await this.checkSchedule();
     
-    // Check every minute
-    this.checkInterval = setInterval(() => {
-      this.checkSchedule();
-    }, 60000);
+    // Use recursive setTimeout to prevent overlapping checks
+    const scheduleNextCheck = () => {
+      this.checkInterval = setTimeout(async () => {
+        await this.checkSchedule();
+        scheduleNextCheck();
+      }, 60000);
+    };
+    
+    scheduleNextCheck();
   }
 
   /**
    * Check current schedule and take action
    */
   async checkSchedule() {
-    const now = new Date();
-    const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    
-    this.log('debug', `Checking schedule: ${currentDay} ${currentTime}`);
-    
-    // Get today's classes
-    const todayClasses = this.schedule.filter(c => c.day === currentDay);
-    
-    if (todayClasses.length === 0) {
-      this.displayNoClasses();
+    // Prevent overlapping checks
+    if (this.isChecking) {
+      this.log('debug', 'Previous check still running, skipping');
       return;
     }
 
-    // Sort classes by time
-    todayClasses.sort((a, b) => a.time.localeCompare(b.time));
+    this.isChecking = true;
     
-    // Find next class
-    const nextClass = todayClasses.find(c => c.time > currentTime);
-    
-    if (nextClass) {
-      this.displayCountdown(nextClass);
+    try {
+      const now = new Date();
+      const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
-      // Check if notification should be sent
-      const classTime = this.parseTime(nextClass.time);
-      const notificationTime = new Date(classTime.getTime() - this.notificationMinutes * 60000);
+      this.log('debug', `Checking schedule: ${currentDay} ${currentTime}`);
       
-      if (now >= notificationTime && now < classTime) {
-        await this.sendNotification(nextClass);
+      // Get today's classes
+      const todayClasses = this.schedule.filter(c => c.day === currentDay);
+      
+      if (todayClasses.length === 0) {
+        this.displayNoClasses();
+        return;
       }
+
+      // Sort classes by time
+      todayClasses.sort((a, b) => a.time.localeCompare(b.time));
       
-      // Check if class should start now
-      if (currentTime === nextClass.time) {
-        await this.attendClass(nextClass);
+      // Find next class
+      const nextClass = todayClasses.find(c => c.time > currentTime);
+      
+      if (nextClass) {
+        this.displayCountdown(nextClass);
+        
+        // Check if notification should be sent
+        const classKey = `${nextClass.day}-${nextClass.time}-${nextClass.name}`;
+        const classTime = this.parseTime(nextClass.time);
+        const notificationTime = new Date(classTime.getTime() - this.notificationMinutes * 60000);
+        
+        if (now >= notificationTime && now < classTime && !this.notifiedClasses.has(classKey)) {
+          await this.sendNotification(nextClass);
+          this.notifiedClasses.add(classKey);
+        }
+        
+        // Check if class should start now
+        if (currentTime === nextClass.time) {
+          await this.attendClass(nextClass);
+        }
+      } else {
+        this.log('info', '✅ All classes completed for today');
       }
-    } else {
-      this.log('info', '✅ All classes completed for today');
+    } finally {
+      this.isChecking = false;
     }
   }
 
@@ -341,7 +367,7 @@ class ScheduleManager {
       this.log('info', '🔐 Navigating to CAS login...');
       await page.goto('https://jasig.firat.edu.tr/cas/login', { 
         waitUntil: 'networkidle2',
-        timeout: 30000 
+        timeout: this.NAVIGATION_TIMEOUT 
       });
       
       // Take debug screenshot
@@ -357,7 +383,7 @@ class ScheduleManager {
       this.log('info', 'Submitting login...');
       await Promise.all([
         page.click('button[type="submit"]'),
-        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 })
+        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: this.NAVIGATION_TIMEOUT })
       ]);
       
       this.log('success', '✅ CAS login successful');
@@ -366,7 +392,7 @@ class ScheduleManager {
       this.log('info', `📚 Navigating to class: ${classInfo.name}`);
       await page.goto(classInfo.url, { 
         waitUntil: 'networkidle2',
-        timeout: 30000 
+        timeout: this.NAVIGATION_TIMEOUT 
       });
       
       // Take debug screenshot
@@ -381,6 +407,9 @@ class ScheduleManager {
         message: `Successfully joined ${classInfo.name}`,
         sound: true
       });
+      
+      // Keep browser open for the class duration
+      this.log('info', 'Browser will remain open for class. Close manually when done or press Ctrl+C to exit.');
       
     } catch (error) {
       this.log('error', 'Failed to attend class', error.message);
@@ -405,7 +434,7 @@ class ScheduleManager {
     this.log('info', '🛑 Shutting down...');
     
     if (this.checkInterval) {
-      clearInterval(this.checkInterval);
+      clearTimeout(this.checkInterval);
     }
     
     if (this.browser) {

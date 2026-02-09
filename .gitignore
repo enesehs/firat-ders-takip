@@ -10,7 +10,7 @@ logs/
 .env.local
 
 # Configuration files with credentials
-config.json
+.credentials.enc
 credentials.json
 
 # Build output
