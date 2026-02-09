@@ -1,0 +1,41 @@
+{
+  "schedule": [
+    {
+      "day": "Monday",
+      "time": "09:00",
+      "url": "https://online.firat.edu.tr/class/example1",
+      "name": "Matematik I"
+    },
+    {
+      "day": "Monday",
+      "time": "14:00",
+      "url": "https://online.firat.edu.tr/class/example2",
+      "name": "Fizik I"
+    },
+    {
+      "day": "Tuesday",
+      "time": "10:00",
+      "url": "https://online.firat.edu.tr/class/example3",
+      "name": "Programlama"
+    },
+    {
+      "day": "Wednesday",
+      "time": "13:00",
+      "url": "https://online.firat.edu.tr/class/example4",
+      "name": "Veritabanı"
+    },
+    {
+      "day": "Thursday",
+      "time": "11:00",
+      "url": "https://online.firat.edu.tr/class/example5",
+      "name": "Algoritma"
+    },
+    {
+      "day": "Friday",
+      "time": "09:30",
+      "url": "https://online.firat.edu.tr/class/example6",
+      "name": "Web Teknolojileri"
+    }
+  ],
+  "notificationMinutes": 5
+}
