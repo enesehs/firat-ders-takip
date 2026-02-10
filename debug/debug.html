@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug - Fırat Ders Takip Sistemi</title>
+</head>
+<body>
+  <h1>Debug Panel</h1>
+
+  <div>
+    <button id="tabActivity">Aktivite Logu</button>
+    <button id="tabErrors">Hatalar</button>
+    <button id="tabStorage">Storage</button>
+    <button id="tabSystem">Sistem</button>
+  </div>
+
+  <hr>
+
+  <div id="activity">
+    <h2>Aktivite Logu</h2>
+    <div id="activityLogs"></div>
+    <button id="refreshLogs">Yenile</button>
+    <button id="clearLogs">Temizle</button>
+    <button id="testNotification">Test Bildirimi Gonder</button>
+  </div>
+
+  <div id="errors" style="display:none;">
+    <h2>Hatalar</h2>
+    <div id="errorLogs"></div>
+  </div>
+
+  <div id="storage" style="display:none;">
+    <h2>Chrome Storage Icerigi</h2>
+    <pre id="storageContent"></pre>
+    <button id="refreshStorage">Yenile</button>
+  </div>
+
+  <div id="system" style="display:none;">
+    <h2>Sistem Bilgileri</h2>
+    <p>Extension Version: <span id="extVersion">-</span></p>
+    <p>Manifest Version: <span id="manifestVersion">-</span></p>
+    <p>Credentials: <span id="credStatus">-</span></p>
+    <p>Schedule: <span id="scheduleStatus">-</span></p>
+    <p>GitHub Takip: <span id="githubTakipStatus">-</span></p>
+    <hr>
+    <h3>Tarayici Bilgileri</h3>
+    <p>Tarayici: <span id="browserInfo">-</span></p>
+    <p>Platform: <span id="platformInfo">-</span></p>
+    <p>Dil: <span id="langInfo">-</span></p>
+    <p>Ekran: <span id="screenInfo">-</span></p>
+    <p>User Agent: <span id="userAgentInfo" style="font-size:10px;word-break:break-all;">-</span></p>
+    <p>Cevrimici: <span id="onlineInfo">-</span></p>
+    <p>Zaman Dilimi: <span id="timezoneInfo">-</span></p>
+    <hr>
+    <button id="toggleGithubTakip">GitHub Takip Durumunu Degistir</button>
+  </div>
+
+  <script src="debug.js"></script>
+</body>
+</html>
