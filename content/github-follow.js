@@ -4,7 +4,10 @@ const REPO_URL = 'github.com/enesehs/firat-ders-takip';
 
 let alertGosterildi = false;
 let dinleyiciEklendi = false;
+let starDinleyiciEklendi = false;
 let toastGosterildi = false;
+let baslangicTakipDurumu = false;
+let baslangicStarDurumu = false;
 
 function toastGoster(mesaj) {
   if (document.getElementById('dts-toast')) return;
@@ -99,14 +102,21 @@ function takipKontrol() {
 
   if (unfollowButonu) {
     chrome.storage.local.set({ githubTakipEdildi: true });
-    if (!toastGosterildi) {
+    if (!baslangicTakipDurumu && !toastGosterildi) {
       toastGosterildi = true;
-      toastGoster('takip için teşekkürler, şimdi kullanabilirsin');
+      toastGoster('takip için teşekkürler, son bir adım kaldı');
+      baslangicTakipDurumu = true;
+      setTimeout(() => {
+        window.location.href = 'https://' + REPO_URL;
+      }, 2000);
     }
     return;
   }
 
   if (followButonu) {
+    if (baslangicTakipDurumu) {
+        baslangicTakipDurumu = false;
+    }
     chrome.storage.local.set({ githubTakipEdildi: false });
     butonVurgula(followButonu);
 
@@ -118,7 +128,11 @@ function takipKontrol() {
           if (yeniUnfollow) {
             clearInterval(bekleyici);
             chrome.storage.local.set({ githubTakipEdildi: true });
-            toastGoster('takip için teşekkürler, şimdi kullanabilirsin');
+            toastGoster('takip için teşekkürler, son bir adım kaldı');
+            baslangicTakipDurumu = true;
+            setTimeout(() => {
+              window.location.href = 'https://' + REPO_URL;
+            }, 2000);
           }
         }, 300);
         setTimeout(() => clearInterval(bekleyici), 15000);
@@ -128,18 +142,83 @@ function takipKontrol() {
   }
 }
 
+function starKontrol() {
+  const starButonlari = Array.from(document.querySelectorAll('.starred button, .unstarred button, button.js-social-reaction-trigger-button, button.js-toggler-target'));
+  
+  let starButonu = null;
+  let unstarButonu = null;
+
+  const tumButonlar = document.querySelectorAll('button');
+  for (const btn of tumButonlar) {
+    const text = btn.textContent.trim().toLowerCase();
+    const aria = (btn.getAttribute('aria-label') || '').toLowerCase();
+    
+    if ((text === 'star' || aria.includes('star this repository')) && !text.includes('unstar')) {
+      if (btn.offsetParent !== null) starButonu = btn;
+    }
+    
+    if (text === 'unstar' || aria.includes('unstar this repository')) {
+        if (btn.offsetParent !== null) unstarButonu = btn;
+    }
+  }
+
+  if (unstarButonu) {
+    chrome.storage.local.set({ githubStarEdildi: true });
+    if (!baslangicStarDurumu && !toastGosterildi) {
+        toastGosterildi = true;
+        toastGoster('yıldızladığın için teşekkürler, kullanmaya başlayabilirsin...');
+        baslangicStarDurumu = true;
+    }
+    return;
+  }
+
+  if (starButonu) {
+      if (baslangicStarDurumu) baslangicStarDurumu = false;
+      chrome.storage.local.set({ githubStarEdildi: false });
+      butonVurgula(starButonu);
+
+      if (!starDinleyiciEklendi) {
+          starDinleyiciEklendi = true;
+          starButonu.addEventListener('click', function() {
+              const bekleyici = setInterval(() => {
+                  let yeniUnstar = false;
+                  const btns = document.querySelectorAll('button');
+                  for(const b of btns) {
+                      const t = b.textContent.trim().toLowerCase();
+                      const a = (b.getAttribute('aria-label') || '').toLowerCase();
+                      if ((t === 'unstar' || a.includes('unstar this repository')) && b.offsetParent !== null) {
+                          yeniUnstar = true;
+                          break;
+                      }
+                  }
+
+                  if (yeniUnstar) {
+                      clearInterval(bekleyici);
+                      chrome.storage.local.set({ githubStarEdildi: true });
+                      toastGoster('yıldızladığın için teşekkürler, kralsın');
+                      baslangicStarDurumu = true;
+                  }
+              }, 300);
+              setTimeout(() => clearInterval(bekleyici), 15000);
+          }, { once: true });
+      }
+  }
+}
 
 
-function baslat() {
+
+async function baslat() {
   const url = window.location.href;
+  
+  const data = await chrome.storage.local.get(['githubTakipEdildi', 'githubStarEdildi']);
+  baslangicTakipDurumu = data.githubTakipEdildi === true;
+  baslangicStarDurumu = data.githubStarEdildi === true;
 
   if (url.includes(REPO_URL)) {
-    chrome.storage.local.set({ githubStarEdildi: false });
     starKontrol();
     const gozlemci = new MutationObserver(() => starKontrol());
     gozlemci.observe(document.body, { childList: true, subtree: true });
   } else if (url.includes(PROFIL_URL)) {
-    chrome.storage.local.set({ githubTakipEdildi: false });
     takipKontrol();
     const gozlemci = new MutationObserver(() => takipKontrol());
     gozlemci.observe(document.body, { childList: true, subtree: true });

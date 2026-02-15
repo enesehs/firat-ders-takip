@@ -110,7 +110,7 @@ function sistemBilgileriniYukle() {
   document.getElementById('extVersion').textContent = manifest.version;
   document.getElementById('manifestVersion').textContent = 'v' + manifest.manifest_version;
 
-  chrome.storage.local.get(['credentials', 'schedule', 'githubTakipEdildi'], (sonuc) => {
+  chrome.storage.local.get(['credentials', 'schedule', 'githubTakipEdildi', 'githubStarEdildi'], (sonuc) => {
     const kimlikDurum = document.getElementById('credStatus');
     if (sonuc.credentials && sonuc.credentials.studentId) {
       kimlikDurum.textContent = 'Ayarli';
@@ -123,6 +123,9 @@ function sistemBilgileriniYukle() {
 
     const githubDurum = document.getElementById('githubTakipStatus');
     githubDurum.textContent = sonuc.githubTakipEdildi ? 'Evet' : 'Hayir';
+
+    const starDurum = document.getElementById('githubStarStatus');
+    starDurum.textContent = sonuc.githubStarEdildi ? 'Evet' : 'Hayir';
   });
 
   document.getElementById('browserInfo').textContent = tarayiciBilgisiAl();
@@ -143,6 +146,14 @@ function sistemBilgileriniYukle() {
       const yeniDeger = !sonuc.githubTakipEdildi;
       chrome.storage.local.set({ githubTakipEdildi: yeniDeger }, () => {
         document.getElementById('githubTakipStatus').textContent = yeniDeger ? 'Evet' : 'Hayir';
+      });
+    });
+
+
+    chrome.storage.local.get(['githubStarEdildi'], (sonuc) => {
+      const yeniStar = !sonuc.githubStarEdildi;
+      chrome.storage.local.set({ githubStarEdildi: yeniStar }, () => {
+          document.getElementById('githubStarStatus').textContent = yeniStar ? 'Evet' : 'Hayir';
       });
     });
   });
